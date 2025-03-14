@@ -1,2 +1,57 @@
+# Ignora archivos CSV y modelos pickle
 *.csv
 *.pkl
+
+# Entornos virtuales y dist
+env/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Binarios compilados
+*.so
+
+# AWS config y archivos temporales de instalación
+.aws/
+aws/dist/
+aws/       # Esto ignorará todo el folder aws/
+!aws/README.md   # Pero mantendrá el README si lo necesitas subir
+*.zip
+
+# MLflow runs (experimentos locales)
+mlruns/
+
+# Modelos locales (asumiendo que es temporal)
+model/
+# Si quieres mantener un modelo en versión, sácale el ignore a su versión específica
+
+# Archivos de configuración locales y envs
+.env
+*.env
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# Archivos temporales generales
+tmp/
+data/tmp/
+
+# Otros (opcional según tus carpetas)
+logs/
