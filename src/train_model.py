@@ -17,10 +17,13 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 from sklearn.model_selection import train_test_split
 from lightgbm import LGBMClassifier
 
+DATE = '2025-03-15_23-35-18'
+
 # Config
 BUCKET_NAME = 'nequi-mlops-data-bucket'
 SILVER_KEY = 'silver/cleaned_dataset.csv'
-TFIDF_KEY = 'silver/tfidf_features.joblib'
+# TFIDF_KEY = 'silver/tfidf_features.joblib'
+TFIDF_KEY = f'silver/tfidf_matrix_{DATE}.pkl'
 
 LOCAL_MODEL_ROOT = 'model'
 MODEL_FILENAME = 'lgbm_model.pkl'
@@ -108,6 +111,7 @@ def train_and_evaluate(df, X_tfidf):
     # ================================
 
     date = datetime.now().strftime("%Y-%m-%d")
+    date2 = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
     # Directorios locales
     model_dir = os.path.join(LOCAL_MODEL_ROOT, f'v_{date}')
@@ -115,16 +119,16 @@ def train_and_evaluate(df, X_tfidf):
 
     # Rutas locales
     model_path = os.path.join(model_dir, f'model_{date}.pkl')
-    vectorizer_path = os.path.join(model_dir, f'vectorizer_{date}.pkl')
+    # vectorizer_path = os.path.join(model_dir, f'{model_dir}/vectorizer_{date2}.pkl') 
     cm_path = os.path.join(model_dir, CONFUSION_MATRIX_FILENAME)
     metrics_path = os.path.join(model_dir, METRICS_FILENAME)
 
     # Guardar modelo y vectorizador localmente
     joblib.dump(clf, model_path)
-    joblib.dump(X_tfidf, vectorizer_path)
+    # joblib.dump(X_tfidf, vectorizer_path)
 
     print(f'Modelo guardado en {model_path}')
-    print(f'Vectorizador guardado en {vectorizer_path}')
+    # print(f'Vectorizador guardado en {vectorizer_path}')
 
     # Guardar matriz de confusión
     plot_confusion_matrix(cm, class_names=clf.classes_, output_path=cm_path)
@@ -145,12 +149,12 @@ def train_and_evaluate(df, X_tfidf):
     # SUBIR A S3
     # ================================
     s3_model_key = f'model/v_{date}/model_{date}.pkl'
-    s3_vectorizer_key = f'model/v_{date}/vectorizer_{date}.pkl'
+    # s3_vectorizer_key = f'model/v_{date}/vectorizer_{date}.pkl'
     s3_cm_key = f'model/v_{date}/{CONFUSION_MATRIX_FILENAME}'
     s3_metrics_key = f'model/v_{date}/{METRICS_FILENAME}'
 
     upload_file_to_s3(model_path, BUCKET_NAME, s3_model_key)
-    upload_file_to_s3(vectorizer_path, BUCKET_NAME, s3_vectorizer_key)
+    # upload_file_to_s3(vectorizer_path, BUCKET_NAME, s3_vectorizer_key)
     upload_file_to_s3(cm_path, BUCKET_NAME, s3_cm_key)
     upload_file_to_s3(metrics_path, BUCKET_NAME, s3_metrics_key)
 
