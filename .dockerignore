@@ -1,0 +1,28 @@
+# Git files
+.git
+.gitignore
+
+# Editor/IDE
+.vscode
+.idea
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Env directories
+env/
+.venv/
+venv/
+
+# Test code (opcional si no quieres incluirlo)
+test/
+tests/
+
+# Local files that shouldn’t be in the image
+*.log
+*.tmp
+*.swp
+
+# Optional: Exclude Docker-related files if not needed inside the container
+docker-compose.yml
