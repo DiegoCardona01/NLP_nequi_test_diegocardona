@@ -3,7 +3,16 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+       - main
+
+  schedule:
+    - cron: '0 15 * * *'
+
+  workflow_dispatch:
+    reason:
+      description: 'Manually triggered workflow'
+      required: false
+      default: 'Manually triggered workflow'
 
 jobs:
   ci-cd:
@@ -26,7 +35,7 @@ jobs:
 
     #   - name: Lint code
     #     run: |
-    #       flake8 . --max-line-length=100
+    #       flake8 . --max-line-length=124
 
       - name: Run tests
         env:
@@ -34,3 +43,60 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           pytest test/
+
+      - name: Run data processing
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          python src/data_transform.py
+
+      - name: Train the model and upload to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          python src/train_model.py
+
+      # DEPLOYMENT TO ELASTIC BEANSTALK
+      - name: Install AWS CLI
+        run: |
+          pip install --upgrade pip
+          pip install awscli
+
+      - name: Create deployment ZIP file
+        run: |
+          zip -r deploy.zip Dockerfile appi initializer.sh
+          ls -lh deploy.zip
+
+      - name: Upload ZIP to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          aws s3 cp deploy.zip s3://${{ secrets.S3_BUCKET_NAME }}/deploy_model/deploy-${{ github.run_number }}.zip \
+          --region $AWS_REGION
+
+      - name: Create new Elastic Beanstalk version
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          aws elasticbeanstalk create-application-version \
+            --application-name ${{ secrets.EB_APP_NAME }} \
+            --version-label v-${{ github.run_number }} \
+            --source-bundle S3Bucket=${{ secrets.S3_BUCKET_NAME }},S3Key=deploy_model/deploy-${{ github.run_number }}.zip \
+            --region $AWS_REGION
+
+      - name: Deploy new version to Elastic Beanstalk environment
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          aws elasticbeanstalk update-environment \
+            --environment-name ${{ secrets.EB_ENV_NAME }} \
+            --version-label v-${{ github.run_number }} \
+            --region $AWS_REGION
