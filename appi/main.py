@@ -15,6 +15,7 @@ app = FastAPI(
     version="1.0"
 )
 
+
 @app.post("/v1/predict", response_model=PredictionResponse)
 def predict(request: PredictionRequest):
     """
