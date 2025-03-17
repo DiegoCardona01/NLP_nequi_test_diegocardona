@@ -7,6 +7,7 @@
 
 from .models import PredictionRequest, PredictionResponse
 from .util import clf, vectorizer
+import logging
 
 map_predictions = {
     '0': 'Credit Reporting',
@@ -17,32 +18,38 @@ map_predictions = {
 }
 
 
-def predecir_texto(texto: str):
-    texto_vectorizado = vectorizer.transform([texto])
+def predecir_texto(texto: list):
+    texto_vectorizado = vectorizer.transform(texto)
 
-    prediccion = int((clf.predict(texto_vectorizado)[0]))
-    prediccion = map_predictions[str(prediccion)]
-    print(clf.predict(texto_vectorizado))
-    print(type(prediccion))
-    print(prediccion)
+    predicciones_indices = clf.predict(texto_vectorizado).tolist()
 
-    probabilidades_array = clf.predict_proba(texto_vectorizado)[0]
-    clases = clf.classes_
-    print(f"Clases: {clases}")
-    print(f"Probabilidades array: {probabilidades_array}")
+    predicciones_labels = [map_predictions[str(i)] for i in predicciones_indices]
 
-    probabilidades = {int(clase): float(prob) for clase, prob in zip(clases, probabilidades_array)}
+    logging.info(clf.predict(texto_vectorizado))
+    logging.info(type(predicciones_labels))
+    logging.info(predicciones_labels)
 
-    print(f"Probabilidades: {probabilidades}")
+    probabilidades_array = clf.predict_proba(texto_vectorizado)
 
-    return prediccion, probabilidades
+    logging.info(f"Probabilidades array: {probabilidades_array}")
+
+    probabilidades_predichas = []
+
+    for i, pred_idx in enumerate(predicciones_indices):
+        prob = probabilidades_array[i][pred_idx]
+        probabilidades_predichas.append(prob)
+
+    return list(zip(predicciones_labels, probabilidades_predichas))
 
 
 def get_prediction(request: PredictionRequest) -> PredictionResponse:
     texto = request.text
-    prediccion, probabilidades = predecir_texto(texto)
+    predicciones_proba = predecir_texto(texto)
+    results = [
+        {
+            'prediction': pred,
+            'probability': prob
+        } for pred, prob in predicciones_proba
+    ]
 
-    return PredictionResponse(
-        prediction=str(prediccion),
-        probability=probabilidades[0]
-    )
+    return PredictionResponse(results=results)

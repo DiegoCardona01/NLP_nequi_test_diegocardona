@@ -24,6 +24,73 @@ En el dataset, se encuentran distintas variables que pueden ser de utilidad, per
 - Entonces nuestro modelo al entrenarse con estos datos, va a poder predecir a qué tipo de categoría, entre las 5 ya mencionadas, corresponde el comentario.
 - Este tipo de modelo es útil ya que se puede usar con la información de redes sociales o comentarios de servicio al cliente y ver preferencias, gustos, sentimientos, categorías, etc del cliente. De esta forma se le puede dar un mejor enfoque y tratamiento dentro de una entidad bancaria al cliente.
 
+## Prueba de Modelo Desplegado
+
+Antes de ver todas las consideraciones, es importante mostrar cómo acceder al modelo desplegado y funcionando.
+
+Para poder probar el modelo, se ha desplegado un endpoint de acceso, el enlace a este es el siguiente:
+
+xxx
+
+Este endpoint fue desarrollado con FastAPI y gracias a su forma documental, se puede tener una mirada previa a cómo utilizar el modelo desplegado. Este modelo fue desarrollado para poder recibir peticiones en batch o grupos de información y da una respuesta en tiempo real. Con este desarrollo, es sólo cuestión de hacer un desarrollo de frontend para ser comercializado.
+
+La forma de utilizarlo es siguiendo los siguientes pasos:
+
+1. Le aparecerá una pantalla como la siguiente donde deberá seleccionar la primer barra con la palabra POST en verde (el POST muestra que se hace una petición del tipo enviar información y recibir un resultado):
+
+![Imagen de entrada ](imagenes/primera_visual.png)
+
+Al seleccionar esta opción, se le desplegará otra visual, en donde al lado derecho tiene un botón que dice *Try it out* debe presionarlo para poder ingresar una petición.
+
+![Imagen de entrada ](imagenes/segunda_visual.png)
+
+Edición
+
+![Imagen de entrada ](imagenes/edicion.png)
+
+Ahora, podrá ingresar una serie de peticiones, por ejemplo imagine que necesita identificar una serie de quejas o comentarios de clientes, podrá detectar a qué categoría corresponden. Un ejemplo es ingresar lo siguiente:
+
+`{
+  "text": [
+    "I have a problem with my credit report",
+    "Can you help me with a credit card for my job?",
+    "In the last year, I was working with one bank account instance of several accounts"
+  ]
+}`
+
+Se verá algo como lo siguiente:
+
+![Imagen de entrada ](imagenes/texto_ingresado.png)
+
+Ahora presione en el botón orizontal azul grande *Execute* y al bajar en la página podrá ver los resultados de la predicción:
+
+![Imagen de entrada ](imagenes/predicciones.png)
+
+Las predicciones muestran a qué categoría corresponde la conversación y con qué cantidad de probabilidad se tiene certeza de esto.
+
+Así como se tiene un despliegue del modelo en un endpoint, también esta calendarizado para que se ejecute el entrenamiento y predicciones cada cierta fecha (domingo en la tarde 15 horas utc), esto se puede ver en el archivo .github/workflow/ct.yml en *'0 15 * * 0'* que es la parte de la automatización.
+
+De igual forma, hay un botón en los *Actions* del repositorio, esto ejecuta manualmente el proceso de entrenamiento.
+
+Finalmente, se puede obtener una muestra en local del modelo descargando el archivo docker_model.zip, este debe ser implementado preferencialmente usando un sistema operativo amigable con comandos como Linux.
+
+En este caso, se tiene el archivo descargable en utils/model_comprimido.zip, este archivo contiene la versión ejecutable en local al crear la imagen docker desde la terminal.
+
+Para esto se debe descargar el archivo y extraer su contenido en una carpeta, luego desde la terminal de comandos, teniendo instalado docker (ver https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04-es), podemos correr lo siguiente parados en el contenido descargado:
+
+`sudo docker build -t prueba-app .`
+
+Para crear la imagen mediante el contenedor docker, luego que se instala podemos correr dicha imagen creada en el puerto 8000:
+
+`sudo docker run -p 8000:8000 prueba-app`
+
+Y finalmente si vamos a el explorador principal que usamos, ingresamos la dirección creada como 
+
+`http://0.0.0.0:8000/docs`
+
+Volveremos a visualizar lo ya mencionado de la página interactiva de documentación FastAPI.
+
+
 # 1. Propuesta de arquitectura en la nube
 
 Para desarrollar el proyecto, se optó por una arquitectura basada en nube de Azure Web Service (AWS), junto con la gestión del versionamiento en GitHub y la automatización de los diferentes pipelines con GitHub Actions.
@@ -69,35 +136,28 @@ Para una correcta implementación del modelo, se implementó una encodización d
 
 ### 1. **Data Preparation y ETL:**
 
-- **Apache Airflow:**
-  - Orquestación de los flujos ETL.
-  - Permite la programación y monitoreo de tareas en pipelines de datos.
-  - Ideal para tareas recurrentes, manejo de dependencias y reintentos automáticos.
-
 - **Python (pandas / numpy):**
   - Procesamiento y limpieza de datos antes de su almacenamiento o consumo.
   - Transformaciones ligeras y manipulación de datasets.
 
-- **Apache Spark (opcional para grandes volúmenes):**
-  - Procesamiento distribuido para datasets de gran tamaño.
-  - Escalable y eficiente para pipelines de datos pesados.
-
-### 2. **Almacenamiento de Datos:**
-
-- **Snowflake:**
-  - Data warehouse en la nube.
+- **S3:**
+  - Se guarda el contenido de la información. Un paso faltante es la automatización de la carga desde kaggle o alguna fuente de datos, esto es posible con una lambda de AWS.
   - Permite almacenar datos estructurados, optimizando consultas y tiempos de respuesta.
   - Uso de esquemas particionados por país y ciudad para segmentar datos y mejorar el performance.
+  - En el caso de este proyecto, se buscó hacer una organización tipo medalla, es decir que se buscan tener las capas bronze, silver y gold, en donde bronze tiene los datos mas crudos, silver los datos procesados y gold los datos para mostrar en reportes.
 
-### 3. **Model Training e Implementación:**
+  ![categorias](imagenes/s3_bucket.png)
 
-- **scikit-learn / XGBoost / LightGBM:**
-  - Entrenamiento de modelos predictivos, en particular para predicciones de órdenes activas.
-  - Flexibilidad para ajustar hiperparámetros y experimentar con diferentes algoritmos.
+### 2. **Model Training e Implementación:**
+
+- **scikit-learn /  LightGBM:**
+  - Entrenamiento de modelos predictivos, en nuestro caso para predicciones de clasificación.
+  - Experimentar con diferentes algoritmos.
 
 - **MLflow:**
   - Seguimiento de experimentos, métricas de modelos y control de versiones.
   - Facilita la trazabilidad y comparación entre modelos.
+  - Se guardó en S3 el seguimiento de mlflow que arrojó métricas y la mátriz de confusión.
 
 - **Docker:**
   - Empaquetado de los modelos para garantizar consistencia entre entornos de desarrollo y producción.
@@ -109,84 +169,32 @@ Para una correcta implementación del modelo, se implementó una encodización d
   - Creación de servicios REST para exponer las predicciones de los modelos.
   - Ligero y de alto rendimiento, ideal para APIs de predicciones en tiempo real.
 
-- **Prometheus + Grafana:**
-  - Monitoreo de la performance de los servicios de predicción.
-  - Métricas como latencia, throughput y estado de los endpoints.
-
-### 5. **Arquitectura General y Roles:**
-
-- **Airflow** coordina la ejecución de los pipelines ETL y el refresco de los modelos.
-- **Snowflake** almacena la información necesaria para el entrenamiento y el
-
-## Detalle de la preparación de datos y trabajos ETL
-
-El proceso de preparación de datos y ETL dentro del proyecto sigue una estructura automatizada y controlada a través de pipelines CI/CD, orquestados principalmente con **Airflow** y definidos en los workflows de GitHub Actions.
-
-### **Fuentes de Datos:**
-- Datos históricos y en tiempo real extraídos desde **Snowflake**.
-- Información de órdenes activas, históricos por ciudad y país, métricas de performance de RTs.
-
-### **Pasos principales del ETL:**
-
-1. **Extracción**:
-   - Consulta y extracción de datos desde **Snowflake**, segmentado por `country` y `city_id`.
-   - Se asegura la disponibilidad de datos recientes para mantener actualizado el entrenamiento y scoring.
-
-2. **Transformación**:
-   - Limpieza y normalización de datos con **pandas**.
-   - Cálculo de nuevas variables y features relevantes para el modelo (por ejemplo: variaciones por hora, día de la semana, tendencias recientes).
-
-3. **Carga**:
-   - Los datos procesados se almacenan nuevamente en **Snowflake**, en tablas específicas para entrenamiento (`training_data`) y scoring (`scoring_data`).
-   - Se crean vistas particionadas para facilitar el acceso eficiente a los datos.
 
 ---
 
-## Detalle del entrenamiento del modelo
-
-El proceso de entrenamiento del modelo sigue una lógica controlada y reproducible:
-
-1. **Preprocesamiento**:
-   - Se filtran y limpian datos atípicos (outliers) que puedan distorsionar el modelo.
-   - Normalización de variables numéricas.
-   - Se crean datasets balanceados para evitar sesgos.
-
-2. **Entrenamiento**:
-   - Uso de **scikit-learn**, **XGBoost** o **LightGBM** según la tarea y el volumen de datos.
-   - Se realiza el ajuste de hiperparámetros mediante validación cruzada.
-   - El modelo se entrena a nivel país y ciudad para capturar comportamientos específicos de cada segmento.
-
-3. **Evaluación**:
-   - Métricas de validación: MAE, RMSE y R2 Score.
-   - Comparación de modelos para asegurar la mejor performance antes del deployment.
-
-4. **Registro**:
-   - Se guarda el mejor modelo con **MLflow**.
-   - Se almacenan las métricas de cada experimento para trazabilidad.
-
-5. **Deployment**:
-   - El modelo se empaqueta en **Docker** y se despliega a través de **Elastic Beanstalk** como una API REST usando **FastAPI**.
-   - **Elastic Beanstalk** gestiona el escalado automático y la disponibilidad del servicio.
-
----
 
 ## Pipelines de CI/CD y su Rol en el Proyecto
 
 El pipeline del proyecto se fundamenta en los siguientes workflows de GitHub Actions:
 
-- `ci_cd.yml`:
-  - Se ejecuta automáticamente cuando se hace **push** a la rama `main`.
-  - Contiene todas las etapas del pipeline, incluidas las definidas en `ct.yml`.
-  - Realiza pruebas, validaciones y, en caso de éxito, ejecuta el proceso de **continuous deployment** hacia **Elastic Beanstalk**.
-
 - `ct.yml`:
-  - Se ejecuta en los **push** a la rama `develop`.
-  - Corre las pruebas automáticas (unitarias y de integración).
-  - Valida que el código esté correcto antes de pasar a producción.
+  - Se ejecuta en los **push** a la rama `main`.
+  - Hace todo el trabajo de preparar los datos trayéndolos desde el bucket de S3 (ETL) y al procesarlos entrena un nuevo modelo.
+
+- `test.yml`:
+  - Hace un test de conexión a S3 para validar que hay una correcta conexión, los test se pueden ampliar más adelante para hacer pruebas más robustas como de conexión de la api y otras validaciones.
+  - Este también incluye pruebas de flake8, es decir que revisa el código y verifica que cumpla con los estándares de calidad de código.
+
+- `ci_cd.yml`:
+  - Se ejecuta automáticamente cuando termina el `test.yml`.
+  - Hace toda la creación del nuevo contenedor que guarda el modelo y lo despliega en Elastic Beanstalk.
 
 ### **Resumen del flujo:**
-1. Push a `develop` → se ejecuta `ct.yml` para validar el código.
-2. Merge a `main` → se ejecuta `ci_cd.yml` para validar nuevamente y hacer el despliegue automático.
+1. Push a `main`/ `domingo 15 utc` → se ejecuta `ct.yml`.
+2. `ct.yml` finaliza exitosamente → se ejecuta `test.yml` para pruebas de validación.
+3. `test.yml` finaliza exitosamente → se ejecuta `ci_cd.yml` para hacer el despliegue en producción.
+
+![categorias](imagenes/github_actions.png)
 
 ---
 
@@ -199,6 +207,24 @@ El entorno desplegado en **Elastic Beanstalk** cuenta con las siguientes herrami
 - **Elastic Beanstalk Health Dashboard**: Visibilidad sobre el estado de las instancias y métricas básicas (CPU, memoria, latencia).
 - **Prometheus + Grafana** (opcional en ambientes locales o de testing): Para monitoreo avanzado de métricas internas durante el desarrollo.
 
+ ![categorias](imagenes/monitoreo.png)
+
 ---
 
+Con este resumen, terminamos la descripción del repositorio completo, quedan temas por mejorar como el crecimiento de los módulos para tener más funcionalidades que rescatar del modelo o distintas formas de acceso, con la estructura de carpetas propuesta y las tecnologías usadas es posible el escalamiento del repositorio.
 
+![categorias](imagenes/estructura_fold.png)
+
+También, la metodología de control de versiones fue similar a la de git flow, en esta se tuvieron dos ramas principales:
+
+- main: tiene el contenido actualizado del proyecto (producción).
+- develop: es la rama de la que se parte para sacar nuevas funcionalidades, sirve como rama previa a producción por seguridad (producción main)
+- fn features: las ramas features son ramas que se desprenden de develop y en estas se crean las nuevas funcionalidades. Estas existen con el fin de no perjudicar lo que hay en producción.
+
+El flujo de trabajo fue el siguiente:
+
+Se crea una rama feature desde develop → se hace el desarrollo correspondiente → se envia el push al repositorio → se hace merge con develop → si todo esta bien (se debería aprovar por otros) se saca un release desde develop release/0.0.0 su versión se puede ver en el archivo setting.py → se hace push del release y se mergea primero a main y luego a develop.
+
+![categorias](imagenes/version_control.png)
+
+Para más comentarios o preguntas sobre este proyecto, comunicarse a diegocp031293@gmail.com

@@ -34,6 +34,7 @@ aws/dist/
 aws/       # Esto ignorará todo el folder aws/
 !aws/README.md   # Pero mantendrá el README si lo necesitas subir
 *.zip
+!modelo_comprimido.zip
 
 # MLflow runs (experimentos locales)
 mlruns/
