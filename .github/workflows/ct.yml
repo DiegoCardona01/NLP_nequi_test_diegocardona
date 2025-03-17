@@ -6,7 +6,7 @@ on:
       - main
 
   schedule:
-    - cron: '0 15 * * *'
+    - cron: '0 15 * * 0'
 
   workflow_dispatch:
     reason:
@@ -32,17 +32,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r requirements-dev.txt 
-
-      # - name: Lint code
-      #   run: |
-      #     flake8 . --max-line-length=124
-
-      # - name: Run tests
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #   run: |
-      #     pytest test/
 
       - name: Run data processing
         env:

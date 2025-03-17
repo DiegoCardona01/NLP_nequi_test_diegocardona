@@ -6,12 +6,17 @@
 """
 
 from pydantic import BaseModel
+from typing import List
 
 
 class PredictionRequest(BaseModel):
-    text: str
+    text: List[str]
+
+
+class PredictionResult(BaseModel):
+    prediction: str
+    probability: float
 
 
 class PredictionResponse(BaseModel):
-    prediction: str
-    probability: float
+    results: List[PredictionResult]
