@@ -30,7 +30,7 @@ Antes de ver todas las consideraciones, es importante mostrar cómo acceder al m
 
 Para poder probar el modelo, se ha desplegado un endpoint de acceso, el enlace a este es el siguiente:
 
-xxx
+http://nlp-nequi-mlops-env.eba-hr323mqz.us-east-2.elasticbeanstalk.com/docs
 
 Este endpoint fue desarrollado con FastAPI y gracias a su forma documental, se puede tener una mirada previa a cómo utilizar el modelo desplegado. Este modelo fue desarrollado para poder recibir peticiones en batch o grupos de información y da una respuesta en tiempo real. Con este desarrollo, es sólo cuestión de hacer un desarrollo de frontend para ser comercializado.
 
@@ -111,6 +111,8 @@ En la primer etapa de experimentación, se hizo un análisis de la nulidad de lo
 En la parte experimental, se hizo una reducción de los datos ya que la capacidad del equipo con que se cuenta es baja, también por cuestiones de tiempo se hicieron optimizaciones en los datos que se mencionarán más adelante. Originalmente la fuente de datos cuenta con aprox 2 millones de datos y se redujeron a 1 millon de registros.
 
 Los datos originales vienen desde el 2011 hasta el 2024 y descartando la principal categoría de los temas mencionados por los clientes, vemos que hay una tendencia al crecimiento sobre los temas de cuentas bancarias y tarjetas de crédito, pero estas tienen un crecimiento exponencial y desbordado en 2023. Este periodo, coincide con el regreso a la normalidad pos-pandemia, ¿puede ser este un punto de inflexión? podríamos hacer una regresión con datos de casos de covid-19 por ejemplo, pero deberá ser minuciosa dado que correlación no implica causalidad como se sabe.
+
+![categorias](imagenes/segunda_grafica_eda.png)
 
 Entre los principales crecimientos, vemos que también puntea en 2023 el tema relacionado con cobro de deuda, este puede ser un buen indicio para responder algunas de las anteriores preguntas. Recordando que en epoca de pandemia las tasas de interés estuvieron en mínimos ehistóricos las personas pudieron haber sufrido por la subida de estas y la tentativa de recesión mundial.
 
@@ -226,5 +228,7 @@ El flujo de trabajo fue el siguiente:
 Se crea una rama feature desde develop → se hace el desarrollo correspondiente → se envia el push al repositorio → se hace merge con develop → si todo esta bien (se debería aprovar por otros) se saca un release desde develop release/0.0.0 su versión se puede ver en el archivo setting.py → se hace push del release y se mergea primero a main y luego a develop.
 
 ![categorias](imagenes/version_control.png)
+
+Si existe algún error urgente, que se tiene que sacar pronto de producción, se hace un hotfix: se saca una rama de main (actualizado), la rama se llama hotfix/#1.#2.#3 segun la versión que se tenga cambia el #3 y los demás se mantienen, se hacen los cambios y se mandan al remoto y se mergean primero a main y luego a develop
 
 Para más comentarios o preguntas sobre este proyecto, comunicarse a diegocp031293@gmail.com
