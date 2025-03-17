@@ -53,5 +53,4 @@ model/
 tmp/
 data/tmp/
 
-# Otros (opcional según tus carpetas)
 logs/

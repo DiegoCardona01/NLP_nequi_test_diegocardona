@@ -24,5 +24,4 @@ tests/
 *.tmp
 *.swp
 
-# Optional: Exclude Docker-related files if not needed inside the container
 docker-compose.yml

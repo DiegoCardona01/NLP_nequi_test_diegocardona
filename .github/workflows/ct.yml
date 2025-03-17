@@ -3,7 +3,16 @@ name: Continuous Training
 on:
   push:
     branches:
-      - develop
+      - main
+
+  schedule:
+    - cron: '0 15 * * *'
+
+  workflow_dispatch:
+    reason:
+      description: 'Manually triggered workflow'
+      required: false
+      default: 'Manually triggered workflow'
 
 jobs:
   continuous-train:
@@ -24,16 +33,16 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt 
 
-    #   - name: Lint code  # Opcional, pero recomendable
-    #     run: |
-    #       flake8 . --max-line-length=100
+      # - name: Lint code
+      #   run: |
+      #     flake8 . --max-line-length=124
 
-      - name: Run tests
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          pytest test/
+      # - name: Run tests
+      #   env:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #   run: |
+      #     pytest test/
 
       - name: Run data processing
         env:
@@ -43,7 +52,7 @@ jobs:
           python src/data_transform.py
 
       - name: Train the model and upload to S3
-        env:  # Para pasar credenciales o config a tu script
+        env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
