@@ -1,8 +1,4 @@
-
-import boto3
 import joblib
-import os
-from io import BytesIO
 from sklearn.base import BaseEstimator, TransformerMixin
 
 MODEL_PATH = './model_local/model_2025-03-14.pkl'
