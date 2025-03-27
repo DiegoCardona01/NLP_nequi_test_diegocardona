@@ -1,4 +1,4 @@
-# Prueba técnica Machine Learning Nequi - NLP
+# Machine Learning Prueba de Despliegue AWS - NLP
 
 Nombre: Diego Fernando Cardona Pineda
 
@@ -6,7 +6,7 @@ correo: diegocp031293@gmail.com
 
 # Introducción
 
-Este repositorio, contiene la solución a la prueba técnica para ingeniero de Machine Learning, como fuente de datos para esta se utiliza el conjunto de datos *Consumer Complaint Dataset* que se encuentra en Kaggle (enlace directo: https://www.kaggle.com/datasets/namigabbasov/consumer-complaint-dataset?resource=download). Este set de datos contiene información bancaria de personas estadounidense, fue recolectada por *The Consumer Financial Protection Bureau* (CFPB), entre las variables que tiene se encuentran comentarios de los clientes sobre sus quejas o comentarios y asociados a estas una clasificación tentativa del tipo de queja o comentario al que se refiere. Por ejemplo, un comentario como el siguiente:
+Este repositorio, contiene una base de despliegue de MLOps, como fuente de datos para esta se utiliza el conjunto de datos *Consumer Complaint Dataset* que se encuentra en Kaggle (enlace directo: https://www.kaggle.com/datasets/namigabbasov/consumer-complaint-dataset?resource=download). Este set de datos contiene información bancaria de personas estadounidense, fue recolectada por *The Consumer Financial Protection Bureau* (CFPB), entre las variables que tiene se encuentran comentarios de los clientes sobre sus quejas o comentarios y asociados a estas una clasificación tentativa del tipo de queja o comentario al que se refiere. Por ejemplo, un comentario como el siguiente:
 
 - *I sent a letter to the Credit Bureaus requesting to reinvestigate the disputed Accounts from my cred...*
 
