@@ -1,6 +1,7 @@
 # Ignora archivos CSV y modelos pickle
 *.csv
 *.pkl
+*.DS_store
 
 # Entornos virtuales y dist
 env/
@@ -55,3 +56,8 @@ tmp/
 data/tmp/
 
 logs/
+
+# archivos del entrenamiento con Pytorch
+
+*.pt
+*.pth
